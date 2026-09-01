@@ -11,5 +11,5 @@ public class UserRegistrationRequest {
     private String preferredLocation;
     private Integer minSalary;
     private List<String> targetRoles;
-    //hrllo
+
 }
