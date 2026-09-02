@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExtractedProfile {
+public class    ExtractedProfile {
     private List<String> skills;
     private List<String> roles;
     private int totalExperienceYears;
