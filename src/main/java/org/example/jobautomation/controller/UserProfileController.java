@@ -16,7 +16,7 @@ import java.io.IOException;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserProfileController {
-    private UserProfileService userProfileService;
+    private final UserProfileService userProfileService;
     //user manual pref
     @PostMapping("/register")
     public ResponseEntity<UserProfile> registerUser(@RequestBody UserRegistrationRequest userRegistrationRequest) {
