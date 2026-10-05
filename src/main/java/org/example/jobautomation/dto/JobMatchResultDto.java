@@ -12,7 +12,9 @@ import java.util.List;
 public class JobMatchResultDto {
     private JobListingDto job;
     private Integer matchScore;
-    private String matchLevel;
+    private Integer keywordScore;
+    private String aiScore;
+    private String matchLevel; // high ,medium ,low,rejected
     private List<String> reasons;
     private List<String> concerns;
 }

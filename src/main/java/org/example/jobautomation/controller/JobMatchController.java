@@ -3,6 +3,7 @@ package org.example.jobautomation.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.jobautomation.dto.JobMatchRequest;
 import org.example.jobautomation.dto.JobMatchResponseDto;
+import org.example.jobautomation.service.match.JobMatchService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

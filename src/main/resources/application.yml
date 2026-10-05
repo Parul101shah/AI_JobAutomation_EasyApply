@@ -1,0 +1,114 @@
+scoring:
+  weights:
+    roleMatch: 25
+    skillsMatch: 40
+    experienceMatch: 20
+    locationMatch: 10
+    recencyMatch: 5
+
+  thresholds:
+    high: 70
+    medium: 50
+    low: 30
+    reject: 30
+
+  roleAliases:
+    "java developer":
+      - "backend engineer"
+      - "software engineer"
+      - "java engineer"
+      - "java backend"
+    "spring boot developer":
+      - "backend engineer"
+      - "spring engineer"
+      - "java backend"
+      - "software engineer"
+    "backend engineer":
+      - "java developer"
+      - "software engineer"
+      - "api developer"
+    "software engineer":
+      - "backend engineer"
+      - "java developer"
+      - "full stack engineer"
+    "data engineer":
+      - "data analyst"
+      - "analytics engineer"
+
+  skillAliases:
+    "spring boot":
+      - "spring"
+      - "spring framework"
+    "postgresql":
+      - "postgres"
+    "java":
+      - "java 8"
+      - "java 11"
+      - "java 17"
+    "python":
+      - "python 3"
+    "javascript":
+      - "js"
+      - "node.js"
+      - "nodejs"
+    "react":
+      - "reactjs"
+      - "react.js"
+    "docker":
+      - "containerization"
+    "kubernetes":
+      - "k8s"
+    "aws":
+      - "amazon web services"
+    "gcp":
+      - "google cloud"
+    "azure":
+      - "microsoft azure"
+    "scala":
+      - "scala 2.12"
+      - "scala 2.13"
+
+  keywordSignals:
+    backend_engineering:
+      - "backend"
+      - "software engineer"
+      - "api"
+      - "microservices"
+      - "rest api"
+      - "distributed systems"
+      - "database"
+      - "server-side"
+    java_tech:
+      - "java"
+      - "spring"
+      - "spring boot"
+      - "jpa"
+      - "hibernate"
+    database_tech:
+      - "postgresql"
+      - "postgres"
+      - "mysql"
+      - "mongodb"
+      - "sql"
+      - "redis"
+    cloud_tech:
+      - "aws"
+      - "docker"
+      - "kubernetes"
+      - "devops"
+    data_engineering:
+      - "etl"
+      - "data pipeline"
+      - "data warehouse"
+
+  recency:
+    veryRecentDays: 7
+    recentDays: 30
+
+  location:
+    remoteKeywords:
+      - "remote"
+    regionKeywords:
+      - "us"
+      - "canada"
+      - "india"

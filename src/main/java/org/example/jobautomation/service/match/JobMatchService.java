@@ -28,9 +28,12 @@ public class JobMatchService {
         JobDiscoveryResponse discoveryResponse =
                 jobDiscoveryService.discoverJobs(request.getJobSearchRequest());
 
+        // min score threshold (default 30 if not provided)
+        Integer minimumScore=request.getMinimumScore()!=null?request.getMinimumScore():30;
+
         List<JobMatchResultDto> results = discoveryResponse.getJobs().stream()
                 .map(job -> jobScoringService.score(profile, job))
-                .filter(result -> Boolean.TRUE.equals(request.getIncludeRejected()) || !"REJECT".equals(result.getMatchLevel()))
+                .filter(result -> result.getMatchScore()>=minimumScore)
                 .sorted(Comparator.comparing(JobMatchResultDto::getMatchScore).reversed())
                 .collect(Collectors.toList());
 
