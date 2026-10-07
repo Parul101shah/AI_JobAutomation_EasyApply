@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.HtmlUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 public class GreenhouseJobSourceClient implements JobSourceClient {
 
     private final RestTemplate restTemplate;
+    private final ParallelBoardFetcher boardFetcher;
+    private static final long BOARD_TIMEOUT_SECONDS = 10;
 
     @Value("#{'${jobs.greenhouse.boards:}'.split(',')}")
     private List<String> boardTokens;
@@ -34,24 +37,17 @@ public class GreenhouseJobSourceClient implements JobSourceClient {
 
     @Override
     public List<JobListingDto> searchJobs(JobSearchRequest request) {
-        List<JobListingDto> results = new ArrayList<>();
         List<String> boards = sanitizeTokens(boardTokens);
         int limit = resolveLimit(request);
 
         if (boards.isEmpty()) {
             log.info("Greenhouse discovery skipped. No board tokens configured.");
-            return results;
+            return new ArrayList<>();
         }
 
-        for (String board : boards) {
-            if (results.size() >= limit) {
-                break;
-            }
-            results.addAll(fetchBoardJobs(board, request, limit - results.size()));
-        }
-
-        log.info("Greenhouse discovery complete. boards={}, returnedJobs={}", boards.size(), results.size());
-        return results;
+        return boardFetcher.fetch("Greenhouse", boards,
+                board -> fetchBoardJobs(board, request, limit),
+                limit, BOARD_TIMEOUT_SECONDS);
     }
 
     private List<JobListingDto> fetchBoardJobs(String board, JobSearchRequest request, int remainingSlots) {
@@ -95,7 +91,7 @@ public class GreenhouseJobSourceClient implements JobSourceClient {
         String id = valueAsString(rawJob.get("id"));
         String title = valueAsString(rawJob.get("title"));
         String jobUrl = valueAsString(rawJob.get("absolute_url"));
-        String description = valueAsString(rawJob.get("content"));
+        String description = htmlToText(valueAsString(rawJob.get("content")));
         String postedRaw = valueAsString(rawJob.get("updated_at"));
 
         String location = "";
@@ -166,6 +162,23 @@ public class GreenhouseJobSourceClient implements JobSourceClient {
     private String valueAsString(Object value) {
         return value == null ? "" : String.valueOf(value);
     }
+
+    private String htmlToText(String raw) {
+        if (!StringUtils.hasText(raw)) return "";
+        String html = HtmlUtils.htmlUnescape(raw);          // &lt;h2&gt; -> <h2>
+        String text = html
+                .replaceAll("(?i)<br\\s*/?>", "\n")
+                .replaceAll("(?i)</(p|h[1-6]|div|ul|ol)>", "\n\n")
+                .replaceAll("(?i)<li[^>]*>", "• ")
+                .replaceAll("(?i)</li>", "\n")
+                .replaceAll("<[^>]+>", "");                 // strip remaining tags
+        text = HtmlUtils.htmlUnescape(text)                 // &nbsp; &amp; &#39; (double-encoded)
+                .replace('\u00A0', ' ');
+        return text.replaceAll("[ \\t]+\n", "\n")
+                .replaceAll("\n{3,}", "\n\n")
+                .trim();
+    }
+
 
     private Instant parseInstant(String value) {
         if (!StringUtils.hasText(value)) {

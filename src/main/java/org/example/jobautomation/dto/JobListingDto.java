@@ -1,5 +1,6 @@
 package org.example.jobautomation.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ public class JobListingDto {
     private String location;
     private String jobUrl;
     private String description;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm 'UTC'", timezone = "UTC")
     private Instant postedAt;
 }
 

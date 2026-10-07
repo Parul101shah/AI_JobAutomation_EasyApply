@@ -18,6 +18,7 @@ public class UserProfile {
 
     //Manual input
     private String fullName;
+    @Column(unique = true)
     private String email;
     private String preferredLocation;
     private Integer minSalary;

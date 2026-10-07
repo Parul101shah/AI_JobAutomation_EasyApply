@@ -14,8 +14,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class AiJobScoringService {
 
+    private static final int MAX_DESCRIPTION_CHARS = 3000;
+
     private final ChatClient.Builder chatClientBuilder;
     private final ObjectMapper objectMapper;
+    private final JobTextNormalizer jobTextNormalizer;
 
     public AiScoreResultDto score(UserProfile profile, JobListingDto job) {
         String prompt = buildPrompt(profile, job);
@@ -99,8 +102,6 @@ public class AiJobScoringService {
                 Title: %s
                 Company: %s
                 Location: %s
-                Posted At: %s
-                Job URL: %s
                 Description:
                 %s
                 """.formatted(
@@ -115,9 +116,7 @@ public class AiJobScoringService {
                 safe(job.getTitle()),
                 safe(job.getCompany()),
                 safe(job.getLocation()),
-                safe(job.getPostedAt()),
-                safe(job.getJobUrl()),
-                truncate(safe(job.getDescription()), 5000)
+                truncate(jobTextNormalizer.toPlainText(job.getDescription()), MAX_DESCRIPTION_CHARS)
         );
     }
 
