@@ -64,6 +64,13 @@ public class UserProfileService {
     //Step 3: User confirms (or edits) the AI-extracted profile.
 
     public UserProfile confirmProfile(Long userId, ExtractedProfile extracted) {
+        log.info("Confirming profile for user {}", userId);
+        log.info("Skills: {}", extracted.getSkills());
+        log.info("Roles: {}", extracted.getRoles());
+        log.info("Experience: {}", extracted.getTotalExperienceYears());
+        log.info("Education: {}", extracted.getEducation());
+        log.info("Summary: {}", extracted.getProfileSummary());
+
         UserProfile user = userProfileRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 

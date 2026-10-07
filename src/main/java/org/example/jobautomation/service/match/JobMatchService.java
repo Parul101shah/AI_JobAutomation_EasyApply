@@ -20,7 +20,7 @@ public class JobMatchService {
 
     private final UserProfileService userProfileService;
     private final JobDiscoveryService jobDiscoveryService;
-    private final JobScoringService jobScoringService;
+    private final CombinedJobScoringService combinedJobScoringService;
 
     public JobMatchResponseDto matchJobs(Long userId, JobMatchRequest request) {
         UserProfile profile = userProfileService.getProfile(userId);
@@ -28,12 +28,12 @@ public class JobMatchService {
         JobDiscoveryResponse discoveryResponse =
                 jobDiscoveryService.discoverJobs(request.getJobSearchRequest());
 
-        // min score threshold (default 30 if not provided)
-        Integer minimumScore=request.getMinimumScore()!=null?request.getMinimumScore():30;
+        Integer minimumScore = request.getMinimumScore() != null ? request.getMinimumScore() : 30;
 
         List<JobMatchResultDto> results = discoveryResponse.getJobs().stream()
-                .map(job -> jobScoringService.score(profile, job))
-                .filter(result -> result.getMatchScore()>=minimumScore)
+                .map(job -> combinedJobScoringService.score(profile, job))
+                .filter(result -> Boolean.TRUE.equals(request.getIncludeRejected())
+                        || result.getMatchScore() >= minimumScore)
                 .sorted(Comparator.comparing(JobMatchResultDto::getMatchScore).reversed())
                 .collect(Collectors.toList());
 
