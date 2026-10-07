@@ -41,8 +41,8 @@ public class JobDiscoveryService {
         // Phase 1: start every source in parallel (doesn't wait)
         List<CompletableFuture<SourceResult>> futures =sourceClients.stream()
                 .map(client -> CompletableFuture.supplyAsync(
-                        ()-> new SourceResult(client.sourceType(),client.searchJobs(request)),jobDiscoveryExecutor)
-                        .orTimeout(10, TimeUnit.SECONDS)
+                                ()-> new SourceResult(client.sourceType(),client.searchJobs(request)),jobDiscoveryExecutor)
+                        .orTimeout(25, TimeUnit.SECONDS)
                         .exceptionally(ex->{
                             log.warn("Job source {} failed: {}", client.sourceType(), ex.toString());
                             return new SourceResult(client.sourceType(), List.of());
@@ -79,4 +79,3 @@ public class JobDiscoveryService {
         return value == null ? "" : value.trim();
     }
 }
-

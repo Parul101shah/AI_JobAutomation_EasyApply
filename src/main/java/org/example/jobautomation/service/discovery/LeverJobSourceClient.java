@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 public class LeverJobSourceClient implements JobSourceClient {
 
     private final RestTemplate restTemplate;
+    private final ParallelBoardFetcher boardFetcher;
+    private static final long COMPANY_TIMEOUT_SECONDS = 10;
 
     @Value("#{'${jobs.lever.companies:}'.split(',')}")
     private List<String> companyHandles;
@@ -34,24 +36,17 @@ public class LeverJobSourceClient implements JobSourceClient {
 
     @Override
     public List<JobListingDto> searchJobs(JobSearchRequest request) {
-        List<JobListingDto> results = new ArrayList<>();
         List<String> companies = sanitizeHandles(companyHandles);
         int limit = resolveLimit(request);
 
         if (companies.isEmpty()) {
             log.info("Lever discovery skipped. No company handles configured.");
-            return results;
+            return new ArrayList<>();
         }
 
-        for (String company : companies) {
-            if (results.size() >= limit) {
-                break;
-            }
-            results.addAll(fetchCompanyJobs(company, request, limit - results.size()));
-        }
-
-        log.info("Lever discovery complete. companies={}, returnedJobs={}", companies.size(), results.size());
-        return results;
+        return boardFetcher.fetch("Lever", companies,
+                company -> fetchCompanyJobs(company, request, limit),
+                limit, COMPANY_TIMEOUT_SECONDS);
     }
 
     private List<JobListingDto> fetchCompanyJobs(String company, JobSearchRequest request, int remainingSlots) {

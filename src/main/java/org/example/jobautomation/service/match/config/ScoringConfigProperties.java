@@ -15,6 +15,7 @@ public class ScoringConfigProperties {
 
     private Weights weights = new Weights();
     private Thresholds thresholds = new Thresholds();
+    private Blend blend=new Blend();
     private Map<String, List<String>> roleAliases = new HashMap<>();
     private Map<String, List<String>> skillAliases = new HashMap<>();
     private Map<String, List<String>> keywordSignals = new HashMap<>();
@@ -36,6 +37,15 @@ public class ScoringConfigProperties {
         private Integer medium = 50;
         private Integer low = 30;
         private Integer reject = 30;
+    }
+
+    @Data
+    public static class Blend {
+        private Integer keywordWeight = 70;
+        private Integer aiWeight = 30;
+        private Boolean aiEnabled = true;
+        private Integer aiMaxCandidates=8;  // max llm call per req
+        private Integer aiMinKeywordScore=25;  // below this, AI can't realistically help
     }
 
     @Data

@@ -1,20 +1,22 @@
 scoring:
   weights:
     roleMatch: 25
-    skillsMatch: 40
+    skillsMatch: 30
     experienceMatch: 20
     locationMatch: 10
-    recencyMatch: 5
+    recencyMatch: 15
 
   thresholds:
-    high: 70
-    medium: 50
-    low: 30
-    reject: 30
+    high: 60
+    medium: 40
+    low: 25
+    reject: 20
   blend:
-    keywordWeight: 70
-    aiWeight: 30
+    keywordWeight: 80
+    aiWeight: 20
     aiEnabled: true
+    aiMaxCandidates: 8
+    aiMinKeywordScore: 20
 
   roleAliases:
     "java developer":

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Handles the 3-step user onboarding:
@@ -36,7 +37,7 @@ public class UserProfileService {
         profile.setEmail(request.getEmail());
         profile.setPreferredLocation(request.getPreferredLocation());
         profile.setMinSalary(request.getMinSalary());
-        profile.setTargetRoles(request.getTargetRoles());
+        profile.setTargetRoles(request.getTargetRoles()!=null?request.getTargetRoles():new ArrayList<>());
         return userProfileRepository.save(profile);
     }
 
@@ -74,8 +75,8 @@ public class UserProfileService {
         UserProfile user = userProfileRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-        user.setSkills(extracted.getSkills());
-        user.setPastRoles(extracted.getRoles());
+        user.setSkills(extracted.getSkills()!=null ? extracted.getSkills() : new ArrayList<>());
+        user.setPastRoles(extracted.getRoles() != null ? extracted.getRoles() : new ArrayList<>());
         user.setTotalExperienceYears(extracted.getTotalExperienceYears());
         user.setEducation(extracted.getEducation());
         user.setProfileSummary(extracted.getProfileSummary());

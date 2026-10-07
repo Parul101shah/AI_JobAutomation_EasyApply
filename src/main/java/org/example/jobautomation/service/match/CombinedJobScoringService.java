@@ -20,49 +20,46 @@ public class CombinedJobScoringService {
     private final AiJobScoringService aiJobScoringService;
     private final ScoringConfigProperties scoringConfig;
 
-    public JobMatchResultDto score(UserProfile profile, JobListingDto job) {
-        KeywordScoreResultDto keywordResult = keywordJobScoringService.score(profile, job);
-        AiScoreResultDto aiResult = aiJobScoringService.score(profile, job);
+    public KeywordScoreResultDto keywordScore(UserProfile profile, JobListingDto job) {
+        return keywordJobScoringService.score(profile, job);
+    }
 
-        int keywordScore = safe(keywordResult.getTotalScore());
-        int aiScore = safe(aiResult.getScore());
+    /** Keyword-only result: used for jobs that didn't make the AI shortlist. */
+    public JobMatchResultDto buildKeywordOnly(JobListingDto job, KeywordScoreResultDto kw) {
+        return build(job, kw, null);
+    }
 
-        int finalScore = combine(keywordScore, aiScore);
-        String matchLevel = determineLevel(finalScore);
+    /** Calls the LLM, then blends. Slow, so call it only for shortlisted jobs. */
+    public JobMatchResultDto scoreWithAi(UserProfile profile, JobListingDto job, KeywordScoreResultDto kw) {
+        return build(job, kw, aiJobScoringService.score(profile, job));
+    }
+
+    private JobMatchResultDto build(JobListingDto job, KeywordScoreResultDto kw, AiScoreResultDto ai) {
+        int keywordScore = safe(kw.getTotalScore());
+        boolean aiUsed = ai != null && !"UNKNOWN".equals(ai.getMatchLevel()); // fallback = AI failed
+        int aiScore = aiUsed ? safe(ai.getScore()) : 0;
+
+        int finalScore = aiUsed ? combine(keywordScore, aiScore) : keywordScore;
 
         List<String> reasons = new ArrayList<>();
         List<String> concerns = new ArrayList<>();
-
-        if (keywordResult.getReasons() != null) {
-            reasons.addAll(keywordResult.getReasons());
-        }
-        if (aiResult.getReasons() != null) {
-            reasons.addAll(aiResult.getReasons());
-        }
-
-        if (keywordResult.getConcerns() != null) {
-            concerns.addAll(keywordResult.getConcerns());
-        }
-        if (aiResult.getConcerns() != null) {
-            concerns.addAll(aiResult.getConcerns());
+        if (kw.getReasons() != null) reasons.addAll(kw.getReasons());
+        if (kw.getConcerns() != null) concerns.addAll(kw.getConcerns());
+        if (aiUsed) {
+            if (ai.getReasons() != null) reasons.addAll(ai.getReasons());
+            if (ai.getConcerns() != null) concerns.addAll(ai.getConcerns());
         }
 
         return new JobMatchResultDto(
-                job,
-                finalScore,
-                keywordScore,
-                aiScore,
-                aiResult.getSummary(),
-                matchLevel,
-                reasons,
-                concerns
-        );
+                job, finalScore, keywordScore, aiScore,
+                aiUsed ? ai.getSummary() : "AI scoring skipped (keyword score only)",
+                determineLevel(finalScore), reasons, concerns);
     }
 
     private int combine(int keywordScore, int aiScore) {
-        int keywordWeight = 70;
-        int aiWeight = 30;
-        return (keywordScore * keywordWeight + aiScore * aiWeight) / 100;
+        var blend = scoringConfig.getBlend();
+        int total = blend.getKeywordWeight() + blend.getAiWeight();
+        return (keywordScore * blend.getKeywordWeight() + aiScore * blend.getAiWeight()) / total;
     }
 
     private String determineLevel(int score) {

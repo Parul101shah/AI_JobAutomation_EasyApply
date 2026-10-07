@@ -1,5 +1,6 @@
 package org.example.jobautomation.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.jobautomation.dto.ExtractedProfile;
 import org.example.jobautomation.dto.UserRegistrationRequest;
@@ -19,7 +20,7 @@ public class UserProfileController {
     private final UserProfileService userProfileService;
     //user manual pref
     @PostMapping("/register")
-    public ResponseEntity<UserProfile> registerUser(@RequestBody UserRegistrationRequest userRegistrationRequest) {
+    public ResponseEntity<UserProfile> registerUser(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest) {
         return ResponseEntity.ok(userProfileService.register(userRegistrationRequest));
     }
     //upload resume -> get Ai extracted preview

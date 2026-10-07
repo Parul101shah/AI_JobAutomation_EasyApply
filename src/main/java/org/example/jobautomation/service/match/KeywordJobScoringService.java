@@ -13,6 +13,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -196,7 +197,7 @@ public class KeywordJobScoringService {
     }
 
     private boolean matchesSkill(String skill, String text) {
-        if (text.contains(skill)) {
+        if (containsWord(text,skill)){
             return true;
         }
 
@@ -210,13 +211,21 @@ public class KeywordJobScoringService {
         return scoringConfig.getLocation()
                 .getRemoteKeywords()
                 .stream()
-                .anyMatch(location::contains);
+                .anyMatch(k->containsWord(location,k));
     }
 
     private boolean hasRegionMismatch(String location) {
         return scoringConfig.getLocation()
                 .getRegionKeywords()
                 .stream()
-                .anyMatch(location::contains);
+                .anyMatch(k->containsWord(location,k));
+    }
+
+    private boolean containsWord(String text,String word) {
+        if(text == null || word == null || word.isBlank()) {
+            return false;
+        }
+        return Pattern.compile("(?<![a-z0-9])" +Pattern.quote(word) +"(?<![a-z0-9])")
+                .matcher(text).find();
     }
 }
