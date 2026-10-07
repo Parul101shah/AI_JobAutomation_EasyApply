@@ -11,10 +11,11 @@ import java.util.List;
 @AllArgsConstructor
 public class JobMatchResultDto {
     private JobListingDto job;
-    private Integer matchScore;
-    private Integer keywordScore;
-    private String aiScore;
-    private String matchLevel; // high ,medium ,low,rejected
+    private Integer matchScore;     // final combined score
+    private Integer keywordScore;   // rules-based
+    private Integer aiScore;        // AI-based
+    private String aiSummary;       // semantic explanation
+    private String matchLevel;
     private List<String> reasons;
     private List<String> concerns;
 }

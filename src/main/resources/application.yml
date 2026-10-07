@@ -11,6 +11,10 @@ scoring:
     medium: 50
     low: 30
     reject: 30
+  blend:
+    keywordWeight: 70
+    aiWeight: 30
+    aiEnabled: true
 
   roleAliases:
     "java developer":
