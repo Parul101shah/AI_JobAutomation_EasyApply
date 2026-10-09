@@ -33,21 +33,32 @@ public class MatchNotificationService {
 
     /** Returns number of HIGH jobs emailed. */
     public int notifyHighMatches(Long userId, JobMatchRequest request) {
+        long start = System.currentTimeMillis();
+        log.info("notifyHighMatches started for userId={}", userId);
+
+        long t0 = System.currentTimeMillis();
         UserProfile user = userProfileService.getProfile(userId);
+        log.info("Loaded user profile in {} ms for userId={}", System.currentTimeMillis() - t0, userId);
+
         if (!StringUtils.hasText(user.getEmail())) {
             throw new IllegalStateException("User " + userId + " has no email");
         }
 
+        t0 = System.currentTimeMillis();
         JobMatchResponseDto result = jobMatchService.matchJobs(userId, request);
+        log.info("jobMatchService.matchJobs completed in {} ms for userId={} totalMatches={}",
+                System.currentTimeMillis() - t0, userId, result.getMatches().size());
+
+        t0 = System.currentTimeMillis();
         List<HighMatchDto> toSend = new ArrayList<>();
 
         for (JobMatchResultDto m : result.getMatches()) {
             if (!"HIGH".equals(m.getMatchLevel())) continue;
-            JobListingDto job = m.getJob();
 
+            JobListingDto job = m.getJob();
             if (confirmationRepo.existsByUserIdAndSourceAndExternalJobId(
                     userId, job.getSource(), job.getExternalJobId())) {
-                continue; // already emailed before
+                continue;
             }
 
             ResumeConfirmation c = new ResumeConfirmation();
@@ -65,9 +76,19 @@ public class MatchNotificationService {
                     job.getLocation(), job.getJobUrl(),
                     m.getMatchScore(), m.getKeywordScore(), m.getAiScore(), m.getAiSummary()));
         }
+        log.info("HIGH filtering + confirmation save took {} ms for userId={}, highCount={}",
+                System.currentTimeMillis() - t0, userId, toSend.size());
 
-        if (!toSend.isEmpty()) emailService.sendHighMatches(user, toSend);
-        log.info("Emailed {} HIGH matches to user {}", toSend.size(), userId);
+        if (!toSend.isEmpty()) {
+            t0 = System.currentTimeMillis();
+            emailService.sendHighMatches(user, toSend);
+            log.info("Email send completed in {} ms for userId={}, emails={}",
+                    System.currentTimeMillis() - t0, userId, toSend.size());
+        } else {
+            log.info("No HIGH matches to email for userId={}", userId);
+        }
+
+        log.info("notifyHighMatches total time {} ms for userId={}", System.currentTimeMillis() - start, userId);
         return toSend.size();
     }
 
