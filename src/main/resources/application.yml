@@ -4,11 +4,11 @@ scoring:
     skillsMatch: 30
     experienceMatch: 20
     locationMatch: 10
-    recencyMatch: 15
+    recencyMatch: 10
 
   thresholds:
-    high: 60
-    medium: 40
+    high: 40
+    medium: 35
     low: 25
     reject: 20
   blend:
@@ -118,3 +118,10 @@ scoring:
       - "us"
       - "canada"
       - "india"
+
+app:
+  apply:
+    dry-run: true      # fill the form and screenshot, but don't click Submit
+    headless: true     # run browser in a background
+    screenshot-dir: ./apply-screenshots     #folder where sc will be saved
+    phone: ""          # temporary until UserProfile has a phone field

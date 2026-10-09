@@ -225,7 +225,7 @@ public class KeywordJobScoringService {
         if(text == null || word == null || word.isBlank()) {
             return false;
         }
-        return Pattern.compile("(?<![a-z0-9])" +Pattern.quote(word) +"(?<![a-z0-9])")
+        return Pattern.compile("(?<![a-z0-9])" +Pattern.quote(word) +"(?![a-z0-9])")
                 .matcher(text).find();
     }
 }

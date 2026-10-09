@@ -30,20 +30,20 @@ public class ResumeGenerationService {
 
     /** Validates token, marks CONFIRMED, runs generation in the background. */
     public String confirm(String token) {
-        ResumeConfirmation c = confirmationRepo.findByToken(token).orElse(null);
-        if (c == null) return "Invalid link.";
-        if (c.getExpiresAt().isBefore(Instant.now())) return "This link has expired.";
-        if (c.getStatus() != ResumeConfirmation.Status.PENDING) {
-            return "This request was already processed (" + c.getStatus() + ").";
+        // Atomic: only ONE request can change PENDING -> CONFIRMED
+        int updated = confirmationRepo.claim(token, Instant.now());
+        if (updated == 0) {
+            // invalid token, expired, or already used (same message for all)
+            return "This link is invalid, expired, or already used.";
         }
-        c.setStatus(ResumeConfirmation.Status.CONFIRMED);
-        confirmationRepo.save(c);
+
+        ResumeConfirmation c = confirmationRepo.findByToken(token).orElseThrow();
         jobScoringExecutor.submit(() -> generate(c.getId()));
         return "Thanks! Your resume for " + c.getJobTitle() + " at " + c.getCompany()
                 + " is being generated and will be emailed to you shortly.";
     }
 
-    void generate(Long confirmationId) {
+    public void generate(Long confirmationId) {
         ResumeConfirmation c = confirmationRepo.findById(confirmationId).orElseThrow();
         try {
             UserProfile user = userProfileService.getProfile(c.getUserId());
@@ -65,12 +65,12 @@ public class ResumeGenerationService {
             g.setCreatedAt(Instant.now());
             resumeRepo.save(g);
 
-            c.setStatus(ResumeConfirmation.Status.COMPLETED);
+            c.setStatus(ResumeConfirmationStatus.COMPLETED);
             confirmationRepo.save(c);
             emailService.sendResume(user, c.getJobTitle(), c.getCompany(), pdf);
         } catch (Exception ex) {
             log.error("Resume generation failed for confirmation {}", confirmationId, ex);
-            c.setStatus(ResumeConfirmation.Status.FAILED);
+            c.setStatus(ResumeConfirmationStatus.FAILED);
             confirmationRepo.save(c);
         }
     }

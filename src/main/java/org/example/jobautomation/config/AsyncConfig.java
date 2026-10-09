@@ -23,4 +23,10 @@ public class AsyncConfig {
     public ExecutorService jobSourceFetchExecutor() {
         return Executors.newFixedThreadPool(16);
     }
+
+    @Bean(destroyMethod = "shutdown")
+    public ExecutorService applyExecutor() {
+        return Executors.newFixedThreadPool(2); // browsers are heavy (only 2 threads
+    }
+
 }

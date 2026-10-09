@@ -36,22 +36,32 @@ public class JobMatchService {
     private record Scored(JobListingDto job, KeywordScoreResultDto keyword) {}
 
     public JobMatchResponseDto matchJobs(Long userId, JobMatchRequest request) {
-        UserProfile profile = userProfileService.getProfile(userId);
+        long start = System.currentTimeMillis();
+        log.info("matchJobs started for userId={}", userId);
 
+        long t0 = System.currentTimeMillis();
+        UserProfile profile = userProfileService.getProfile(userId);
+        log.info("Loaded profile in {} ms for userId={}", System.currentTimeMillis() - t0, userId);
+
+        t0 = System.currentTimeMillis();
         JobDiscoveryResponse discoveryResponse =
                 jobDiscoveryService.discoverJobs(request.getJobSearchRequest());
+        log.info("Job discovery completed in {} ms for userId={}, totalJobs={}",
+                System.currentTimeMillis() - t0, userId, discoveryResponse.getTotalJobs());
 
         Integer minimumScore = request.getMinimumScore() != null ? request.getMinimumScore() : 30;
 
-        // Phase 0: cheap keyword scoring for ALL jobs (no network), best first
+        t0 = System.currentTimeMillis();
         List<Scored> ranked = discoveryResponse.getJobs().stream()
                 .map(job -> new Scored(job, combinedJobScoringService.keywordScore(profile, job)))
                 .sorted(Comparator.comparing((Scored s) -> s.keyword().getTotalScore()).reversed())
                 .toList();
+        log.info("Keyword scoring completed in {} ms for {} jobs", System.currentTimeMillis() - t0, ranked.size());
 
         var blend = scoringConfig.getBlend();
         List<CompletableFuture<JobMatchResultDto>> futures = new ArrayList<>();
 
+        t0 = System.currentTimeMillis();
         for (int i = 0; i < ranked.size(); i++) {
             Scored s = ranked.get(i);
             boolean useAi = Boolean.TRUE.equals(blend.getAiEnabled())
@@ -59,7 +69,6 @@ public class JobMatchService {
                     && s.keyword().getTotalScore() >= blend.getAiMinKeywordScore();
 
             if (useAi) {
-                // Phase 1: only the shortlist calls the LLM, in parallel
                 futures.add(CompletableFuture
                         .supplyAsync(() -> combinedJobScoringService.scoreWithAi(profile, s.job(), s.keyword()),
                                 jobScoringExecutor)
@@ -72,8 +81,9 @@ public class JobMatchService {
                         combinedJobScoringService.buildKeywordOnly(s.job(), s.keyword())));
             }
         }
+        log.info("Scoring futures created in {} ms", System.currentTimeMillis() - t0);
 
-        // Phase 2: wait for all, then filter and sort
+        t0 = System.currentTimeMillis();
         List<JobMatchResultDto> results = futures.stream()
                 .map(CompletableFuture::join)
                 .filter(Objects::nonNull)
@@ -81,10 +91,14 @@ public class JobMatchService {
                         || result.getMatchScore() >= minimumScore)
                 .sorted(Comparator.comparing(JobMatchResultDto::getMatchScore).reversed())
                 .collect(Collectors.toList());
+        log.info("Waiting + filtering + sorting took {} ms, finalResults={}",
+                System.currentTimeMillis() - t0, results.size());
 
         if (request.getLimit() != null && request.getLimit() > 0 && request.getLimit() < results.size()) {
             results = new ArrayList<>(results.subList(0, request.getLimit()));
         }
+
+        log.info("matchJobs total time {} ms for userId={}", System.currentTimeMillis() - start, userId);
 
         return new JobMatchResponseDto(
                 userId,

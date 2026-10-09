@@ -47,4 +47,13 @@ public class UserProfile {
 
     @Column(columnDefinition = "TEXT")
     private String resumeText;
+
+    private String phone;
+    private String linkedinUrl;
+    private String currentLocation;
+    private Boolean workAuthorized;        // legally authorized to work in target country
+    private Boolean requiresSponsorship;
+    private Integer noticePeriodDays;
+    private Integer expectedSalary;
+
 }

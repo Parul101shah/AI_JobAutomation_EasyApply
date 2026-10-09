@@ -38,6 +38,12 @@ public class UserProfileService {
         profile.setPreferredLocation(request.getPreferredLocation());
         profile.setMinSalary(request.getMinSalary());
         profile.setTargetRoles(request.getTargetRoles()!=null?request.getTargetRoles():new ArrayList<>());
+        profile.setPhone(request.getPhone());
+        profile.setLinkedinUrl(request.getLinkedinUrl());
+        profile.setWorkAuthorized(request.getWorkAuthorized());
+        profile.setRequiresSponsorship(request.getRequiresSponsorship());
+        profile.setNoticePeriodDays(request.getNoticePeriodDays());
+        profile.setExpectedSalary(request.getExpectedSalary());
         return userProfileRepository.save(profile);
     }
 

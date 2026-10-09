@@ -15,5 +15,12 @@ public class UserRegistrationRequest {
     private String preferredLocation;
     private Integer minSalary;
     private List<String> targetRoles;
+    private String phone;
+    private String linkedinUrl;
+    private String currentLocation;
+    private Boolean workAuthorized;        // legally authorized to work in target country
+    private Boolean requiresSponsorship;
+    private Integer noticePeriodDays;
+    private Integer expectedSalary;
 
 }
