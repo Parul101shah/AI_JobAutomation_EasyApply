@@ -15,7 +15,7 @@ services:
       retries: 10
 
   app:
-    build: .
+    image: myjobautomation00/jobautomation:v1
     depends_on:
       db:
         condition: service_healthy
