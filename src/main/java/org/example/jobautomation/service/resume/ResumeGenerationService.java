@@ -31,7 +31,12 @@ public class ResumeGenerationService {
     /** Validates token, marks CONFIRMED, runs generation in the background. */
     public String confirm(String token) {
         // Atomic: only ONE request can change PENDING -> CONFIRMED
-        int updated = confirmationRepo.claim(token, Instant.now());
+        int updated = confirmationRepo.claim(
+                token,
+                Instant.now(),
+                ResumeConfirmationStatus.CONFIRMED,
+                ResumeConfirmationStatus.PENDING
+        );
         if (updated == 0) {
             // invalid token, expired, or already used (same message for all)
             return "This link is invalid, expired, or already used.";
