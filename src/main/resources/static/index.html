@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Automation · Easy Apply</title>
+    <style>
+        :root{--p:#4f46e5;--p2:#4338ca;--bg:#f4f5fb;--card:#fff;--muted:#6b7280;--border:#e5e7eb;--ok:#059669;--warn:#d97706;--err:#dc2626}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:"Segoe UI",Arial,sans-serif;background:var(--bg);color:#1f2937;font-size:15px}
+        header{background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff;padding:14px 28px;display:flex;justify-content:space-between;align-items:center}
+        header h1{font-size:1.35em}
+        #userBadge{font-size:.85em;background:rgba(255,255,255,.2);padding:6px 14px;border-radius:20px}
+        nav{display:flex;gap:2px;background:#fff;padding:0 24px;border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:5}
+        nav button{background:none;border:none;padding:14px 16px;cursor:pointer;font-size:.93em;color:#555;border-bottom:3px solid transparent}
+        nav button:hover{color:var(--p)}
+        nav button.active{color:var(--p);border-bottom-color:var(--p);font-weight:600}
+        main{max-width:1050px;margin:24px auto;padding:0 16px}
+        section{display:none}
+        section.active{display:block}
+        .panel{background:var(--card);padding:22px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:18px}
+        h2{font-size:1.15em;margin-bottom:14px}
+        h3{font-size:1em;margin:14px 0 8px}
+        .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 16px}
+        .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 16px}
+        @media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}}
+        label{display:block;font-size:.82em;font-weight:600;margin-bottom:4px;color:#374151}
+        input,select,textarea{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:6px;font:inherit;background:#fff}
+        input:focus,select:focus,textarea:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+        textarea{min-height:80px;resize:vertical}
+        .chk{display:flex;align-items:center;gap:6px;font-weight:normal;font-size:.88em;margin:4px 0}
+        .chk input{width:auto}
+        .hint{font-size:.76em;color:var(--muted);margin-top:3px}
+        .btn{background:var(--p);color:#fff;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.9em;margin:8px 6px 0 0}
+        .btn:hover{background:var(--p2)}
+        .btn.gray{background:#6b7280}.btn.green{background:var(--ok)}.btn.orange{background:var(--warn)}
+        .btn:disabled{opacity:.6;cursor:wait}
+        .msg{padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:.9em}
+        .msg.ok{background:#d1fae5;color:#065f46}.msg.err{background:#fee2e2;color:#991b1b}.msg.info{background:#e0e7ff;color:#3730a3}
+        .card{border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:12px;background:#fff}
+        .card:hover{box-shadow:0 3px 10px rgba(0,0,0,.06)}
+        .card h4{color:var(--p);margin-bottom:4px;font-size:1em}
+        .meta{font-size:.83em;color:var(--muted);margin-bottom:6px}
+        .badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.76em;font-weight:600;margin:2px 4px 2px 0;background:#eef2ff;color:var(--p)}
+        .HIGH{background:#d1fae5!important;color:#065f46!important}
+        .MEDIUM{background:#fef3c7!important;color:#92400e!important}
+        .LOW,.REJECTED{background:#fee2e2!important;color:#991b1b!important}
+        .score{font-size:1.4em;font-weight:700;float:right;color:var(--p)}
+        ul{margin-left:18px;font-size:.86em}
+        details summary{cursor:pointer;font-size:.84em;color:var(--p);margin:4px 0}
+        details p{font-size:.84em;white-space:pre-line;margin-top:6px;color:#374151}
+        table{width:100%;border-collapse:collapse;font-size:.88em}
+        th,td{text-align:left;padding:9px;border-bottom:1px solid var(--border)}
+        th{background:#f9fafb}
+        .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+        @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+        .stat{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);text-align:center}
+        .stat b{display:block;font-size:1.6em;color:var(--p)}
+        .stat span{font-size:.8em;color:var(--muted)}
+        .steps li{margin:6px 0;font-size:.92em}
+        .hidden{display:none!important}
+        .spin{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:s .8s linear infinite;vertical-align:middle;margin-right:6px}
+        @keyframes s{to{transform:rotate(360deg)}}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🚀 Job Automation · Easy Apply</h1>
+    <span id="userBadge">Not logged in</span>
+</header>
+
+<nav>
+    <button data-tab="home" class="active">🏠 Home</button>
+    <button data-tab="profile">👤 Profile</button>
+    <button data-tab="resume">📄 Resume</button>
+    <button data-tab="discover">🔍 Discover</button>
+    <button data-tab="match">⭐ Match</button>
+    <button data-tab="resumes">📁 My Resumes</button>
+    <button data-tab="actions">✉️ Email Actions</button>
+</nav>
+
+<main>
+
+    <!-- ================= HOME ================= -->
+    <section id="home" class="active">
+        <div class="stats">
+            <div class="stat"><b id="stUser">–</b><span>User ID</span></div>
+            <div class="stat"><b id="stSkills">0</b><span>Skills</span></div>
+            <div class="stat"><b id="stJobs">0</b><span>Jobs discovered</span></div>
+            <div class="stat"><b id="stMatches">0</b><span>Matches</span></div>
+        </div>
+        <div class="panel" style="margin-top:18px">
+            <h2>How it works</h2>
+            <ol class="steps" style="margin-left:20px">
+                <li><b>Profile:</b> register (<code>POST /api/users/register</code>) or load by ID (<code>GET /api/users/{id}</code>).</li>
+                <li><b>Resume:</b> upload a PDF and AI extracts skills (<code>POST /api/users/{id}/upload-resume</code>). Review it, then confirm (<code>POST /api/users/{id}/confirm-profile</code>).</li>
+                <li><b>Discover:</b> search Greenhouse + Lever boards (<code>POST /api/jobs/discovery/run</code>).</li>
+                <li><b>Match:</b> AI scores jobs against your profile (<code>POST /api/jobs/match/{userId}</code>).</li>
+                <li><b>Notify:</b> HIGH matches are emailed to you (<code>POST /api/jobs/match/{userId}/notify</code>).</li>
+                <li><b>Email links:</b> build a tailored resume (<code>/api/resumes/confirm/{token}</code>) and auto-apply (<code>/api/applications/apply/{token}</code>).</li>
+                <li><b>My Resumes:</b> list and download generated PDFs (<code>GET /api/resumes/user/{id}</code>, <code>/api/resumes/{id}/pdf</code>).</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- ================= PROFILE ================= -->
+    <section id="profile">
+        <div class="panel">
+            <h2>Load existing profile</h2>
+            <div id="msgLoad"></div>
+            <div class="grid">
+                <div><label>User ID</label><input id="loadId" type="number" min="1"></div>
+                <div><label>&nbsp;</label>
+                    <button class="btn" id="btnLoad" onclick="loadUser()">Load</button>
+                    <button class="btn gray" onclick="logout()">Logout</button></div>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="profileView">
+            <h2>Current profile</h2>
+            <div id="profileDetails"></div>
+            <button class="btn gray" onclick="refreshUser()">↻ Refresh from server</button>
+        </div>
+
+        <div class="panel">
+            <h2>Register new profile</h2>
+            <div id="msgReg"></div>
+            <div class="grid">
+                <div><label>Full name</label><input id="fullName"></div>
+                <div><label>Email *</label><input id="email" type="email"></div>
+                <div><label>Phone</label><input id="phone"></div>
+                <div><label>LinkedIn URL</label><input id="linkedinUrl" placeholder="https://linkedin.com/in/..."></div>
+                <div><label>Current location</label><input id="currentLocation"></div>
+                <div><label>Preferred location</label><input id="preferredLocation"></div>
+                <div><label>Target roles</label><input id="targetRoles" placeholder="DevOps Engineer, SRE"><div class="hint">Comma separated</div></div>
+                <div><label>Notice period (days)</label><input id="noticePeriodDays" type="number" min="0"></div>
+                <div><label>Min salary</label><input id="minSalary" type="number" min="0"></div>
+                <div><label>Expected salary</label><input id="expectedSalary" type="number" min="0"></div>
+                <div><label>Work authorized</label>
+                    <select id="workAuthorized"><option value="">--</option><option value="true">Yes</option><option value="false">No</option></select></div>
+                <div><label>Requires sponsorship</label>
+                    <select id="requiresSponsorship"><option value="">--</option><option value="true">Yes</option><option value="false">No</option></select></div>
+            </div>
+            <button class="btn" id="btnReg" onclick="register()">Register</button>
+        </div>
+    </section>
+
+    <!-- ================= RESUME ================= -->
+    <section id="resume">
+        <div class="panel">
+            <h2>Upload resume (PDF)</h2>
+            <div id="msgResume"></div>
+            <input type="file" id="resumeFile" accept="application/pdf,.pdf">
+            <button class="btn" id="btnUpload" onclick="uploadResume()">Upload & Extract with AI</button>
+        </div>
+
+        <div class="panel hidden" id="extractBox">
+            <h2>Review AI-extracted data</h2>
+            <div class="hint" style="margin-bottom:10px">Edit anything, then confirm to save it to your profile.</div>
+            <div style="margin-bottom:10px"><label>Skills</label><textarea id="exSkills"></textarea><div class="hint">Comma separated</div></div>
+            <div style="margin-bottom:10px"><label>Past roles</label><input id="exRoles"><div class="hint">Comma separated</div></div>
+            <div class="grid">
+                <div><label>Total experience (years)</label><input id="exYears" type="number" min="0"></div>
+                <div><label>Education</label><input id="exEdu"></div>
+            </div>
+            <div style="margin-top:10px"><label>Profile summary</label><textarea id="exSummary" style="min-height:110px"></textarea></div>
+            <button class="btn green" id="btnConfirm" onclick="confirmProfile()">Confirm & Save</button>
+            <button class="btn gray" onclick="$('extractBox').classList.add('hidden')">Cancel</button>
+        </div>
+    </section>
+
+    <!-- ================= DISCOVER ================= -->
+    <section id="discover">
+        <div class="panel">
+            <h2>Discover jobs (Greenhouse + Lever)</h2>
+            <div id="msgDiscover"></div>
+            <div class="grid">
+                <div><label>Keywords</label><input id="dKeywords" placeholder="devops, site reliability, platform">
+                    <div class="hint">Comma separated. Empty = your profile's target roles</div></div>
+                <div><label>Location</label><input id="dLocation" placeholder="Remote, Bangalore">
+                    <div class="hint">Comma separated alternatives. Empty = any</div></div>
+                <div><label>Max results to show</label><input id="dMax" type="number" value="50" min="1"></div>
+                <div><label>Options</label>
+                    <label class="chk"><input type="checkbox" id="dTitleOnly" checked> Keyword must be in job title</label>
+                    <label class="chk"><input type="checkbox" id="dKeepNoLoc" checked> Keep jobs with no location</label></div>
+            </div>
+            <button class="btn" id="btnDiscover" onclick="discover()">Search</button>
+            <button class="btn gray" onclick="useProfileRoles('dKeywords','msgDiscover')">Use my target roles</button>
+        </div>
+
+        <div class="panel hidden" id="discoverResults">
+            <div id="discoverSummary"></div>
+            <input id="dFilter" placeholder="🔎 Filter shown results (title / company / location)" style="margin:8px 0 14px">
+            <div id="discoverList"></div>
+        </div>
+    </section>
+
+    <!-- ================= MATCH ================= -->
+    <section id="match">
+        <div class="panel">
+            <h2>AI job matching</h2>
+            <div id="msgMatch"></div>
+            <div class="grid3">
+                <div><label>Keywords</label><input id="mKeywords" placeholder="devops, platform"><div class="hint">Empty = profile target roles</div></div>
+                <div><label>Location</label><input id="mLocation" placeholder="Remote"></div>
+                <div><label>Limit per source</label><input id="mLimitSrc" type="number" value="25" min="1"></div>
+                <div><label>Max results</label><input id="mLimit" type="number" value="20" min="1"></div>
+                <div><label>Minimum score</label><input id="mMin" type="number" value="30" min="0" max="100"></div>
+                <div><label>Include rejected</label>
+                    <select id="mRejected"><option value="false">No</option><option value="true">Yes</option></select></div>
+            </div>
+            <button class="btn" id="btnMatch" onclick="matchJobs()">Match now</button>
+            <button class="btn green" id="btnNotify" onclick="notifyHigh()">✉️ Email me HIGH matches</button>
+            <button class="btn gray" onclick="useProfileRoles('mKeywords','msgMatch')">Use my target roles</button>
+            <div class="hint">The email has links to build a tailored resume and auto-apply. Scoring can take 1–2 minutes.</div>
+        </div>
+
+        <div class="panel hidden" id="matchResults">
+            <div id="matchSummary"></div>
+            <div style="margin:8px 0 14px">
+                <label class="chk" style="display:inline-flex;margin-right:14px"><input type="checkbox" class="lvl" value="HIGH" checked> HIGH</label>
+                <label class="chk" style="display:inline-flex;margin-right:14px"><input type="checkbox" class="lvl" value="MEDIUM" checked> MEDIUM</label>
+                <label class="chk" style="display:inline-flex;margin-right:14px"><input type="checkbox" class="lvl" value="LOW" checked> LOW / other</label>
+            </div>
+            <div id="matchList"></div>
+        </div>
+    </section>
+
+    <!-- ================= MY RESUMES ================= -->
+    <section id="resumes">
+        <div class="panel">
+            <h2>Generated tailored resumes</h2>
+            <div id="msgResumes"></div>
+            <button class="btn" onclick="loadResumes()">↻ Refresh</button>
+            <div id="resumesList" style="margin-top:14px"></div>
+        </div>
+    </section>
+
+    <!-- ================= EMAIL ACTIONS ================= -->
+    <section id="actions">
+        <div class="panel">
+            <h2>Email actions (tokens)</h2>
+            <p class="hint" style="margin-bottom:12px">Your notification emails contain links with a token. If you can't click the link, paste the token (or the whole link) here.</p>
+            <div id="msgActions"></div>
+            <label>Token or link</label>
+            <input id="tokenInput" placeholder="e.g. 3f2a... or http://localhost:8080/api/resumes/confirm/3f2a...">
+            <button class="btn" id="btnBuild" onclick="tokenAction('resume')">📄 Build tailored resume</button>
+            <button class="btn orange" id="btnApply" onclick="tokenAction('apply')">🤖 Auto-apply to job</button>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    const API = '/api';
+    const $ = id => document.getElementById(id);
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('jaUser') || 'null'); } catch { user = null; }
+    let allFetchedJobs = [], lastJobs = [], lastMatches = [];
+
+    /* ================= helpers ================= */
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const list = s => (s || '').split(',').map(x => x.trim()).filter(Boolean);
+    const num = id => { const v = $(id).value.trim(); return v === '' ? null : Number(v); };
+    const bool = id => $(id).value === '' ? null : $(id).value === 'true';
+    const badges = (arr, cls = '') => (arr && arr.length) ? arr.map(x => `<span class="badge ${cls}">${esc(x)}</span>`).join('') : '<span class="meta">–</span>';
+    const profileRoles = () => user ? ((user.targetRoles && user.targetRoles.length) ? user.targetRoles : (user.pastRoles || [])) : [];
+
+    function msg(id, text, type = 'info') {
+      $(id).innerHTML = text ? `<div class="msg ${type}">${esc(text)}</div>` : '';
+    }
+
+    async function call(url, opts = {}) {
+      let res;
+      try { res = await fetch(API + url, opts); }
+      catch { throw new Error('Cannot reach server. Is Spring Boot running on http://localhost:8080 ?'); }
+      const text = await res.text();
+      let data; try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      if (!res.ok) {
+        const detail = data && typeof data === 'object' ? (data.message || data.detail || data.error) : data;
+        throw new Error(`HTTP ${res.status}${detail ? ' – ' + String(detail).slice(0, 300) : ''}`);
+      }
+      return data;
+    }
+    const postJson = (url, body) => call(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+
+    function requireUser(msgId) {
+      if (!user) { msg(msgId, 'Register or load a profile first (Profile tab).', 'err'); return false; }
+      return true;
+    }
+
+    async function busy(btnId, fn) {
+      const b = $(btnId), html = b.innerHTML;
+      b.disabled = true; b.innerHTML = '<span class="spin"></span>Working...';
+      try { await fn(); } finally { b.disabled = false; b.innerHTML = html; }
+    }
+
+    function useProfileRoles(inputId, msgId) {
+      if (!requireUser(msgId)) return;
+      const roles = profileRoles();
+      $(inputId).value = roles.join(', ');
+      if (!roles.length) msg(msgId, 'Your profile has no target/past roles yet.', 'err');
+    }
+
+    function updateStats() {
+      $('stUser').textContent = user ? '#' + user.id : '–';
+      $('stSkills').textContent = user?.skills?.length || 0;
+      $('stJobs').textContent = allFetchedJobs.length;
+      $('stMatches').textContent = lastMatches.length;
+    }
+
+    /* ================= tabs ================= */
+    document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('section').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      $(b.dataset.tab).classList.add('active');
+      if (b.dataset.tab === 'resumes' && user) loadResumes();
+    }));
+
+    /* ================= profile ================= */
+    function setUser(u) {
+      user = u;
+      if (u) localStorage.setItem('jaUser', JSON.stringify(u)); else localStorage.removeItem('jaUser');
+      renderProfile();
+    }
+
+    function renderProfile() {
+      $('userBadge').textContent = user ? `#${user.id} · ${user.fullName || user.email}` : 'Not logged in';
+      $('profileView').classList.toggle('hidden', !user);
+      updateStats();
+      if (!user) return;
+      const yn = v => v === true ? 'Yes' : v === false ? 'No' : '–';
+      $('profileDetails').innerHTML = `
+        <div class="card">
+          <h4>${esc(user.fullName || '(no name)')} <span class="meta">· ${esc(user.email)}</span></h4>
+          <div class="meta">ID ${user.id} · 📞 ${esc(user.phone || '–')} · 📍 ${esc(user.currentLocation || '–')} → ${esc(user.preferredLocation || '–')}
+            ${user.linkedinUrl ? ` · <a href="${esc(user.linkedinUrl)}" target="_blank" rel="noopener">LinkedIn</a>` : ''}</div>
+          <p><b>Target roles:</b> ${badges(user.targetRoles)}</p>
+          <p><b>Past roles:</b> ${badges(user.pastRoles)}</p>
+          <p><b>Skills:</b> ${badges(user.skills)}</p>
+          <p class="meta" style="margin-top:6px">Experience: ${user.totalExperienceYears ?? '–'} yrs · Education: ${esc(user.education || '–')} ·
+            Salary: ${user.minSalary ?? '–'} / ${user.expectedSalary ?? '–'} · Notice: ${user.noticePeriodDays ?? '–'} days ·
+            Work authorized: ${yn(user.workAuthorized)} · Sponsorship: ${yn(user.requiresSponsorship)}</p>
+          ${user.profileSummary ? `<details><summary>Profile summary</summary><p>${esc(user.profileSummary)}</p></details>` : ''}
+          ${!user.skills?.length ? '<div class="msg info" style="margin-top:8px">No skills yet. Upload your resume in the Resume tab.</div>' : ''}
+        </div>`;
+    }
+
+    async function register() {
+      if (!$('email').value.trim()) return msg('msgReg', 'Email is required', 'err');
+      const body = {
+        fullName: $('fullName').value.trim(),
+        email: $('email').value.trim(),
+        phone: $('phone').value.trim(),
+        linkedinUrl: $('linkedinUrl').value.trim(),
+        currentLocation: $('currentLocation').value.trim(),
+        preferredLocation: $('preferredLocation').value.trim(),
+        targetRoles: list($('targetRoles').value),
+        minSalary: num('minSalary'),
+        expectedSalary: num('expectedSalary'),
+        noticePeriodDays: num('noticePeriodDays'),
+        workAuthorized: bool('workAuthorized'),
+        requiresSponsorship: bool('requiresSponsorship')
+      };
+      await busy('btnReg', async () => {
+        try {
+          setUser(await postJson('/users/register', body));
+          msg('msgReg', `Registered! Your user ID is ${user.id}. Next: upload your resume.`, 'ok');
+        } catch (e) { msg('msgReg', 'Registration failed: ' + e.message + ' (email may already exist, so try Load)', 'err'); }
+      });
+    }
+
+    async function loadUser() {
+      const id = $('loadId').value.trim();
+      if (!id) return msg('msgLoad', 'Enter a user ID', 'err');
+      await busy('btnLoad', async () => {
+        try { setUser(await call('/users/' + encodeURIComponent(id))); msg('msgLoad', 'Profile loaded', 'ok'); }
+        catch (e) { msg('msgLoad', 'Load failed: ' + e.message, 'err'); }
+      });
+    }
+
+    async function refreshUser() {
+      if (!user) return;
+      try { setUser(await call('/users/' + user.id)); msg('msgLoad', 'Profile refreshed', 'ok'); }
+      catch (e) { msg('msgLoad', 'Refresh failed: ' + e.message, 'err'); }
+    }
+
+    function logout() {
+      setUser(null); allFetchedJobs = []; lastJobs = []; lastMatches = [];
+      ['discoverResults', 'matchResults', 'extractBox'].forEach(id => $(id).classList.add('hidden'));
+      updateStats(); msg('msgLoad', 'Logged out');
+    }
+
+    /* ================= resume ================= */
+    async function uploadResume() {
+      if (!requireUser('msgResume')) return;
+      const f = $('resumeFile').files[0];
+      if (!f) return msg('msgResume', 'Choose a PDF file', 'err');
+      if (!f.name.toLowerCase().endsWith('.pdf')) return msg('msgResume', 'Only PDF files are supported', 'err');
+      const fd = new FormData(); fd.append('file', f);
+      await busy('btnUpload', async () => {
+        try {
+          msg('msgResume', 'Extracting with AI... (usually 10–20s)');
+          const ex = await call(`/users/${user.id}/upload-resume`, { method: 'POST', body: fd });
+          $('exSkills').value = (ex.skills || []).join(', ');
+          $('exRoles').value = (ex.roles || []).join(', ');
+          $('exYears').value = ex.totalExperienceYears ?? '';
+          $('exEdu').value = ex.education ?? '';
+          $('exSummary').value = ex.profileSummary ?? '';
+          $('extractBox').classList.remove('hidden');
+          msg('msgResume', 'Extraction done. Review and confirm below.', 'ok');
+        } catch (e) { msg('msgResume', 'Upload failed: ' + e.message, 'err'); }
+      });
+    }
+
+    async function confirmProfile() {
+      if (!requireUser('msgResume')) return;
+      const body = {
+        skills: list($('exSkills').value),
+        roles: list($('exRoles').value),
+        totalExperienceYears: Math.round(Number($('exYears').value) || 0),   // backend expects int
+        education: $('exEdu').value.trim(),
+        profileSummary: $('exSummary').value.trim()
+      };
+      await busy('btnConfirm', async () => {
+        try {
+          setUser(await postJson(`/users/${user.id}/confirm-profile`, body));
+          $('extractBox').classList.add('hidden');
+          msg('msgResume', 'Profile saved ✅ You can now Discover / Match jobs.', 'ok');
+        } catch (e) { msg('msgResume', 'Confirm failed: ' + e.message, 'err'); }
+      });
+    }
+
+    /* ================= job card ================= */
+    function jobCard(j, extra = '', right = '') {
+      j = j || {};
+      const desc = (j.description || '').replace(/\n{3,}/g, '\n\n').trim();
+      return `<div class="card">
+        ${right}
+        <h4>${esc(j.title || '(untitled)')}</h4>
+        <div class="meta">🏢 ${esc(j.company || '–')} · 📍 ${esc(j.location || 'Not specified')} ·
+          <span class="badge">${esc(j.source || '')}</span>${j.postedAt ? ' · 🕒 ' + esc(j.postedAt) : ''}</div>
+        ${extra}
+        ${desc ? `<details><summary>Description</summary><p>${esc(desc.slice(0, 2000))}${desc.length > 2000 ? '…' : ''}</p></details>` : ''}
+        ${j.jobUrl ? `<a href="${esc(j.jobUrl)}" target="_blank" rel="noopener">View job →</a>` : ''}
+      </div>`;
+    }
+
+    /* ================= discovery ================= */
+    const LOC_ALIASES = {
+      bangalore: ['bengaluru'], bengaluru: ['bangalore'], gurgaon: ['gurugram'], gurugram: ['gurgaon'],
+      mumbai: ['bombay'], usa: ['united states'], us: ['united states', 'usa'],
+      uk: ['united kingdom', 'london'], remote: ['anywhere', 'distributed', 'work from home']
+    };
+
+    function locationOk(jobLoc, wanted, keepEmpty) {
+      if (!wanted.length) return true;
+      const a = (jobLoc || '').toLowerCase();
+      if (!a.trim()) return keepEmpty;
+      return wanted.some(w => a.includes(w) || (LOC_ALIASES[w] || []).some(x => a.includes(x)));
+    }
+
+    function titleOk(title, keywords) {
+      if (!keywords.length) return true;
+      const t = ' ' + (title || '').toLowerCase().replace(/[^a-z0-9+#.]+/g, ' ') + ' ';
+      return keywords.some(k => {
+        k = k.toLowerCase().trim();
+        return t.includes(k) || k.split(/\s+/).every(w => t.includes(' ' + w));
+      });
+    }
+
+    function discoverKeywords() {
+      const k = list($('dKeywords').value);
+      return k.length ? k : profileRoles();
+    }
+
+    function applyDiscoverFilters() {
+      const kws = discoverKeywords();
+      const locs = list($('dLocation').value.toLowerCase());
+      const keepNoLoc = $('dKeepNoLoc').checked;
+      const titleOnly = $('dTitleOnly').checked;
+      const max = num('dMax') || 50;
+      lastJobs = allFetchedJobs
+        .filter(j => locationOk(j.location, locs, keepNoLoc))
+        .filter(j => !titleOnly || titleOk(j.title, kws))
+        .sort((a, b) => String(b.postedAt || '').localeCompare(String(a.postedAt || '')))
+        .slice(0, max);
+    }
+
+    function renderJobs() {
+      const f = $('dFilter').value.trim().toLowerCase();
+      const shown = f ? lastJobs.filter(j => `${j.title} ${j.company} ${j.location}`.toLowerCase().includes(f)) : lastJobs;
+      $('discoverList').innerHTML = shown.map(j => jobCard(j)).join('')
+        || '<p class="meta">No jobs match. Try broader keywords (e.g. "engineer"), clear the location, or untick "Keyword must be in job title".</p>';
+    }
+
+    function refilterDiscover() {
+      if (!allFetchedJobs.length) return;
+      applyDiscoverFilters();
+      $('dShown').textContent = lastJobs.length;
+      renderJobs();
+    }
+
+    async function discover() {
+      const keywords = discoverKeywords();
+      const body = {
+        userId: user ? user.id : null,
+        keywords: keywords,
+        location: null,        // location filtered in the browser (backend match is strict)
+        limitPerSource: 500    // backend limits the merged total; fetch wide, trim here
+      };
+      await busy('btnDiscover', async () => {
+        try {
+          msg('msgDiscover', `Searching${keywords.length ? ' for: ' + keywords.join(', ') : ' all jobs'}... (up to ~30s)`);
+          const r = await postJson('/jobs/discovery/run', body);
+          allFetchedJobs = (r && r.jobs) || [];
+          applyDiscoverFilters();
+          const counts = Object.entries((r && r.sourceCounts) || {})
+            .map(([k, v]) => `<span class="badge ${v ? 'HIGH' : 'LOW'}">${esc(k)}: ${v}</span>`).join('');
+          $('discoverSummary').innerHTML =
+            `<h2>Showing <span id="dShown">${lastJobs.length}</span> of ${allFetchedJobs.length} fetched</h2><div>${counts}</div>`;
+          $('discoverResults').classList.remove('hidden');
+          $('dFilter').value = '';
+          renderJobs();
+          updateStats();
+          msg('msgDiscover', allFetchedJobs.length ? '' : 'Backend returned 0 jobs. Check the server log for "failed or timed out".',
+              allFetchedJobs.length ? 'info' : 'err');
+        } catch (e) { msg('msgDiscover', 'Discovery failed: ' + e.message, 'err'); }
+      });
+    }
+
+    ['dLocation', 'dMax'].forEach(id => $(id).addEventListener('input', refilterDiscover));
+    ['dTitleOnly', 'dKeepNoLoc'].forEach(id => $(id).addEventListener('change', refilterDiscover));
+    $('dFilter').addEventListener('input', renderJobs);
+
+    /* ================= matching ================= */
+    function matchBody() {
+      const k = list($('mKeywords').value);
+      return {
+        jobSearchRequest: {
+          userId: user.id,
+          keywords: k.length ? k : profileRoles(),
+          location: $('mLocation').value.trim() || null,
+          limitPerSource: num('mLimitSrc') || 25
+        },
+        limit: num('mLimit') || 20,
+        minimumScore: num('mMin') ?? 30,
+        includeRejected: $('mRejected').value === 'true'
+      };
+    }
+
+    function renderMatches() {
+      const levels = [...document.querySelectorAll('.lvl:checked')].map(c => c.value);
+      const shown = lastMatches.filter(m => {
+        const l = String(m.matchLevel || '').toUpperCase();
+        return levels.includes(l) || (levels.includes('LOW') && !['HIGH', 'MEDIUM'].includes(l));
+      });
+      $('matchList').innerHTML = shown.map(m => {
+        const lvl = String(m.matchLevel || '').toUpperCase();
+        return jobCard(m.job, `
+          <span class="badge ${esc(lvl)}">${esc(lvl || 'N/A')}</span>
+          <span class="meta">Keyword score: ${m.keywordScore ?? '–'} · AI score: ${m.aiScore ?? '–'}</span>
+          ${m.aiSummary ? `<p style="font-size:.86em;margin:6px 0"><i>${esc(m.aiSummary)}</i></p>` : ''}
+          ${m.reasons?.length ? `<b style="font-size:.82em">✅ Reasons</b><ul>${m.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+          ${m.concerns?.length ? `<b style="font-size:.82em">⚠️ Concerns</b><ul>${m.concerns.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        `, `<span class="score">${m.matchScore ?? '–'}</span>`);
+      }).join('') || '<p class="meta">No matches for the selected levels.</p>';
+    }
+    document.querySelectorAll('.lvl').forEach(c => c.addEventListener('change', renderMatches));
+
+    async function matchJobs() {
+      if (!requireUser('msgMatch')) return;
+      await busy('btnMatch', async () => {
+        try {
+          msg('msgMatch', 'Scoring jobs with AI... this can take 1–2 minutes.');
+          const r = await postJson(`/jobs/match/${user.id}`, matchBody());
+          lastMatches = ((r && r.matches) || []).slice().sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+          const lv = l => lastMatches.filter(m => String(m.matchLevel).toUpperCase() === l).length;
+          $('matchSummary').innerHTML = `<h2>${r.totalMatched ?? lastMatches.length} matched of ${r.totalJobsEvaluated ?? '?'} evaluated</h2>
+            <span class="badge HIGH">HIGH: ${lv('HIGH')}</span><span class="badge MEDIUM">MEDIUM: ${lv('MEDIUM')}</span>
+            <span class="badge LOW">Other: ${lastMatches.length - lv('HIGH') - lv('MEDIUM')}</span>`;
+          $('matchResults').classList.remove('hidden');
+          renderMatches(); updateStats();
+          msg('msgMatch', lastMatches.length ? '' : 'No matches. Lower the minimum score or use broader keywords.', lastMatches.length ? 'info' : 'err');
+        } catch (e) { msg('msgMatch', 'Match failed: ' + e.message, 'err'); }
+      });
+    }
+
+    async function notifyHigh() {
+      if (!requireUser('msgMatch')) return;
+      await busy('btnNotify', async () => {
+        try {
+          const r = await postJson(`/jobs/match/${user.id}/notify`, matchBody());
+          msg('msgMatch', `${(r && r.status) || 'Accepted.'} → ${user.email}`, 'ok');
+        } catch (e) { msg('msgMatch', 'Notify failed: ' + e.message, 'err'); }
+      });
+    }
+
+    /* ================= generated resumes ================= */
+    async function loadResumes() {
+      if (!requireUser('msgResumes')) return;
+      try {
+        msg('msgResumes', 'Loading...');
+        const rows = (await call(`/resumes/user/${user.id}`)) || [];
+        msg('msgResumes', '');
+        $('resumesList').innerHTML = rows.length ? `
+          <table><thead><tr><th>ID</th><th>Job</th><th>Company</th><th>Source</th><th>Created</th><th></th></tr></thead><tbody>
+          ${rows.map(r => `<tr><td>${esc(r.id)}</td><td>${esc(r.title)}</td><td>${esc(r.company)}</td>
+            <td><span class="badge">${esc(r.source)}</span></td><td>${esc(r.createdAt)}</td>
+            <td><a class="btn" style="text-decoration:none;display:inline-block;margin:0" href="${API}/resumes/${encodeURIComponent(r.id)}/pdf">⬇ PDF</a></td></tr>`).join('')}
+          </tbody></table>`
+          : '<p class="meta">No tailored resumes yet. Use “Email me HIGH matches” in the Match tab, then confirm the build from the email.</p>';
+      } catch (e) { msg('msgResumes', 'Load failed: ' + e.message, 'err'); }
+    }
+
+    /* ================= email token actions ================= */
+    function extractToken(v) {
+      v = (v || '').trim();
+      const m = v.match(/\/(?:confirm|apply)\/([^/?#\s]+)/);
+      return m ? m[1] : v;
+    }
+
+    async function tokenAction(kind) {
+      const token = extractToken($('tokenInput').value);
+      if (!token) return msg('msgActions', 'Paste a token or link', 'err');
+      const url = kind === 'resume' ? `/resumes/confirm/${encodeURIComponent(token)}`
+                                    : `/applications/apply/${encodeURIComponent(token)}`;
+      await busy(kind === 'resume' ? 'btnBuild' : 'btnApply', async () => {
+        try {
+          msg('msgActions', kind === 'resume' ? 'Building tailored resume...' : 'Starting auto-apply...');
+          const html = await call(url, { method: 'POST' });
+          const text = new DOMParser().parseFromString(String(html), 'text/html').body.textContent.trim();
+          msg('msgActions', text || 'Done', 'ok');
+        } catch (e) { msg('msgActions', 'Failed: ' + e.message, 'err'); }
+      });
+    }
+
+    /* ================= init ================= */
+    renderProfile();
+    if (user) refreshUser();   // sync with server on page load
+</script>
+</body>
+</html>
