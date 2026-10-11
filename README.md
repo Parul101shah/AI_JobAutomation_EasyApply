@@ -57,25 +57,13 @@ docker compose up -d
                            │
    🐘 PostgreSQL · 🌱 Greenhouse & Lever · 🤖 OpenAI · 📧 Gmail SMTP
 ```
+## ⚡ Overall Workflow
 
-```mermaid
-flowchart LR
-    A["📄 Upload Resume"] --> B["🧠 AI Extracts Profile"]
-    B --> C["🔍 Discover Jobs (14 Sources Parallel)"]
-    C --> D["📊 Keyword Score"]
-    D --> E["🤖 AI Score Top 8"]
-    E --> F["📧 Email HIGH Matches"]
-    F --> G["✅ User Approves"]
-    G --> H["📝 Tailored PDF Resume"]
-    H --> I["🖱️ Playwright Applies"]
-    I --> J["📬 Result Email"]
+<div align="center">
 
-    classDef step fill:#eef6ff,stroke:#4a90e2,color:#1a1a1a;
-    classDef human fill:#fff4e5,stroke:#f5a623,color:#1a1a1a;
+![Workflow](workflow.svg)
 
-    class A,B,C,D,E,F,H,I,J step;
-    class G human;
-```
+</div>
 
 ---
 
