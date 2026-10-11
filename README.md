@@ -135,6 +135,20 @@ docker compose up -d
 
 **Status flow:** `PENDING` → `CONFIRMED` → `COMPLETED` · `APPLYING` → `APPLIED` / `NEEDS_MANUAL` / `FAILED`
 
+
+---
+
+## 📁 Structure
+
+```
+src/main/java/org/example/jobautomation/
+├── config/        Thread pools · RestTemplate timeouts · CORS
+├── controller/    REST endpoints
+├── service/       discovery · match · notification · resume · apply
+├── strategy/      Greenhouse / Lever apply strategies
+├── entity/        UserProfile · ResumeConfirmation · GeneratedResume
+└── repository/    Spring Data JPA
+```
 ---
 
 ## 🐳 Docker
@@ -160,19 +174,34 @@ docker build -t jobautomation .  # build image locally
 > Create a `.env` file with `DB_PASSWORD`, `OPENAI_KEY`, `MAIL_USER`, `MAIL_APP_PASSWORD`. Never commit it.
 > Apply screenshots are saved to `./apply-screenshots`.
 
+
 ---
 
-## 📁 Structure
+---
 
+## ☁️ Deploy on Google Cloud
+
+Runs on a **GCP Compute Engine VM** (`asia-south2-a`) using the same Docker Compose stack.
+
+```bash
+# 1. On the VM (Ubuntu 22.04): install Docker
+sudo apt-get update && sudo apt-get install -y docker.io docker-compose-v2 git
+sudo usermod -aG docker $USER && newgrp docker
+
+# 2. Open port 8080 in the VPC firewall
+gcloud compute firewall-rules create allow-jobautomation --allow tcp:8080
+
+# 3. Clone, add .env, start
+git clone https://github.com/Parul101shah/AI_JobAutomation_EasyApply.git
+cd AI_JobAutomation_EasyApply
+# create .env: DB_PASSWORD, OPENAI_KEY, MAIL_USER, MAIL_APP_PASSWORD
+docker compose up -d
 ```
-src/main/java/org/example/jobautomation/
-├── config/        Thread pools · RestTemplate timeouts · CORS
-├── controller/    REST endpoints
-├── service/       discovery · match · notification · resume · apply
-├── strategy/      Greenhouse / Lever apply strategies
-├── entity/        UserProfile · ResumeConfirmation · GeneratedResume
-└── repository/    Spring Data JPA
-```
+
+🌐 Open **http://&lt;VM_EXTERNAL_IP&gt;:8080**
+
+> [!TIP]
+> Reserve a **static external IP**, otherwise the IP changes when the VM restarts and old email approval links break.
 
 ---
 
