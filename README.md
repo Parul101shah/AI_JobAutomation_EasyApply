@@ -86,11 +86,9 @@ docker compose up -d
 | 1 | Job sources fetched concurrently | **14 boards**, 1 wave |
 | 2 | Fetch thread pool | **16 threads** ≥ 14 boards |
 | 3 | Worst case if a board hangs | **10 s** vs **140 s** sequential |
-| 4 | HTTP timeouts | **3 s** connect · **8 s** read |
-| 5 | AI calls limited to shortlist | **≤ 8** vs up to 50 (**−84%**) |
-| 6 | AI scoring rounds | **2** rounds vs 8 (5 threads) |
-| 7 | Prompt size caps | **3000 / 4000 / 2000** chars |
-| 8 | `/notify` endpoint | **HTTP 202** instantly, work in background |
+| 4 | AI calls limited to shortlist | **≤ 8** vs up to 50 (**−84%**) |
+| 5 | AI scoring rounds | **2** rounds vs 8 (5 threads) |
+| 6 | `/notify` endpoint | **HTTP 202** instantly, work in background |
 
 ---
 
@@ -101,7 +99,6 @@ docker compose up -d
 | 🎯 | **Hybrid scoring** | Keyword engine (80%) + LLM judgement (20%); falls back to keyword-only if AI fails |
 | ⚙️ | **Config-driven matching** | Weights, thresholds, role & skill aliases in `application.yml` — no redeploy |
 | 🙋 | **Human-in-the-loop** | Nothing applied without a click · one-time tokens expire in **7 days** · **dry-run on by default** |
-| 🛡️ | **Truthful AI** | Resume prompts forbid invented facts · sensitive (EEO) questions never auto-answered |
 | 🔌 | **Per-ATS strategies** | Greenhouse & Lever today · a new platform is one new class |
 | 🧯 | **Fail-safe** | CAPTCHA or unknown required question → `NEEDS_MANUAL`, never guessed |
 
@@ -111,7 +108,6 @@ docker compose up -d
 |:---|:---|
 | 🧵 **Concurrency** | `CompletableFuture` fan-out, dedicated pools, per-task timeout + fallback |
 | 💰 **Cost** | AI only for top 8 jobs with keyword score ≥ 20 |
-| ⚖️ **Fairness** | Round-robin merge across boards before applying the limit |
 | 🗃️ **Data** | De-duplication · unique constraint per `(user, source, job)` |
 | 🔒 **Race safety** | Atomic `UPDATE … WHERE status = PENDING` for token claim |
 | 🧰 **Resources** | One shared Chromium, new browser context per application |
@@ -179,6 +175,8 @@ docker build -t jobautomation .  # build image locally
 
 ---
 
+---
+
 ## ☁️ Deploy on Google Cloud
 
 Runs on a **GCP Compute Engine VM** (`asia-south2-a`) using the same Docker Compose stack.
@@ -202,6 +200,27 @@ docker compose up -d
 
 > [!TIP]
 > Reserve a **static external IP**, otherwise the IP changes when the VM restarts and old email approval links break.
+
+<div align="center">
+<img src="VM_instance.png" alt="GCP Compute Engine VM running" width="800"/>
+</div>
+
+---
+
+## 📸 Running Application
+
+<div align="center">
+
+**User profile**<br>
+<img src="UserProfile.png" alt="User profile screen" width="800"/>
+
+**High-match jobs**<br>
+<img src="HighMatchJobs.png" alt="High-match jobs list" width="800"/>
+
+**Email notification**<br>
+<img src="EmailNotification.png" alt="Email notification with approve link" width="800"/>
+
+</div>
 
 ---
 
